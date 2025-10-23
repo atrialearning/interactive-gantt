@@ -152,12 +152,18 @@ function addTask() {
   input.value = 'Task ' + (++taskCount);
   task.appendChild(input);
 
-  // ✅ Adjusted width: 70px (fits one day perfectly)
-  task.style.width = '70px';
+  // one day = 80px wide, five visible rows max
+  const gridSize = 80;
+  const rowHeight = 45;
+  const maxRows = 5;
 
-  // Initial position (start at Day 1)
-  task.style.left = (taskCount * 60) + 'px';
-  task.style.top = (taskCount * 40) + 'px';
+  // Calculate wrapped position
+  const col = Math.floor((taskCount - 1) / maxRows);
+  const row = (taskCount - 1) % maxRows;
+
+  task.style.left = (col * gridSize) + 'px';
+  task.style.top = (row * rowHeight) + 'px';
+  task.style.width = '70px';
   timeline.appendChild(task);
 
   let offsetX = 0, offsetY = 0, isDragging = false;
@@ -173,10 +179,8 @@ function addTask() {
     if (isDragging) {
       let x = e.pageX - timeline.offsetLeft - offsetX;
       let y = e.pageY - timeline.offsetTop - offsetY;
-
-      // ✅ Snap perfectly to 80px grid
       const snappedX = Math.round(x / gridSize) * gridSize;
-      task.style.left = Math.max(0, Math.min(snappedX, timelineWidth - task.offsetWidth)) + 'px';
+      task.style.left = Math.max(0, Math.min(snappedX, timeline.offsetWidth - task.offsetWidth)) + 'px';
       task.style.top = Math.max(0, Math.min(y, timeline.offsetHeight - task.offsetHeight)) + 'px';
     }
   });
@@ -185,9 +189,11 @@ function addTask() {
     isDragging = false;
   });
 }
+
 </script>
 
 
 </body>
 </html>
+
 
