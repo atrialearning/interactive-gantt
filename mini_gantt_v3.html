@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Gantt Chart</title>
+<style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f7faff;
+    padding: 15px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  h2 {
+    color: #211499;
+    text-align: center;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  h2::before {
+    content: "🧭";
+  }
+
+  p {
+    text-align: center;
+    color: #367484;
+    margin: 4px 0 12px;
+  }
+
+  #gantt-container {
+    border: 2px solid #3FC2C2;
+    border-radius: 10px;
+    background: #ffffff;
+    width: 800px; /* exactly 10 columns × 80px each */
+    height: 280px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .timeline-labels {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    border-bottom: 1px solid #3FC2C2;
+    background: #f0faff;
+    color: #211499;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .timeline-labels div {
+    padding: 6px;
+    border-right: 1px solid #3FC2C2;
+  }
+  .timeline-labels div:last-child {
+    border-right: none;
+  }
+
+  #timeline {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    background: repeating-linear-gradient(
+      to right,
+      #e6f6f6 0px,
+      #e6f6f6 80px,
+      #ffffff 80px,
+      #ffffff 160px
+    );
+  }
+
+  .task {
+    position: absolute;
+    background-color: #3FC2C2;
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+    cursor: grab;
+    height: 35px;
+    line-height: 35px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: box-shadow 0.2s;
+    padding: 0 6px;
+  }
+
+  .task:active {
+    cursor: grabbing;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+
+  .task input {
+    border: none;
+    background: transparent;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    width: 100%;
+    outline: none;
+    font-family: inherit;
+  }
+
+  button {
+    background: #211499;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #3FC2C2;
+  }
+
+</style>
+</head>
+<body>
+
+<h2>Build Your Own Mini Gantt Chart</h2>
+<p>Add, drag, and rename tasks to visualize your 10-day project timeline.</p>
+
+<button onclick="addTask()">+ Add Task</button>
+
+<div id="gantt-container">
+  <div class="timeline-labels">
+    <div>Day 1</div><div>Day 2</div><div>Day 3</div><div>Day 4</div><div>Day 5</div>
+    <div>Day 6</div><div>Day 7</div><div>Day 8</div><div>Day 9</div><div>Day 10</div>
+  </div>
+  <div id="timeline"></div>
+</div>
+
+<script>
+let taskCount = 0;
+const timeline = document.getElementById('timeline');
+const gridSize = 80; // one day = 80px
+const timelineWidth = gridSize * 10;
+
+function addTask() {
+  const task = document.createElement('div');
+  task.className = 'task';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = 'Task ' + (++taskCount);
+  task.appendChild(input);
+
+  // Initial position
+  task.style.left = (taskCount * 60) + 'px';
+  task.style.top = (taskCount * 40) + 'px';
+  task.style.width = '150px';
+  timeline.appendChild(task);
+
+  let offsetX = 0, offsetY = 0, isDragging = false;
+
+  task.addEventListener('mousedown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    isDragging = true;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      let x = e.pageX - timeline.offsetLeft - offsetX;
+      let y = e.pageY - timeline.offsetTop - offsetY;
+      const snappedX = Math.round(x / gridSize) * gridSize;
+      task.style.left = Math.max(0, Math.min(snappedX, timelineWidth - task.offsetWidth)) + 'px';
+      task.style.top = Math.max(0, Math.min(y, timeline.offsetHeight - task.offsetHeight)) + 'px';
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+}
+</script>
+
+</body>
+</html>
