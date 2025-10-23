@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Gantt Chart</title>
+<style>
+  body { font-family: "Segoe UI", Arial, sans-serif; background: #f9fbff; padding: 20px; }
+  h2 { color: #211499; text-align: center; }
+  p { text-align: center; color: #367484; }
+  #timeline {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    border: 2px solid #3FC2C2;
+    border-radius: 10px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+  .task {
+    position: absolute;
+    background-color: #3FC2C2;
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+    cursor: grab;
+    height: 35px;
+    line-height: 35px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: box-shadow 0.2s;
+  }
+  .task:active { cursor: grabbing; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+  button {
+    background: #211499; color: #fff; border: none;
+    padding: 8px 16px; border-radius: 8px;
+    margin: 10px 0; cursor: pointer;
+  }
+  button:hover { background: #3FC2C2; }
+</style>
+</head>
+<body>
+
+<h2>🧭 Build Your Own Mini Gantt Chart</h2>
+<p>Add and drag tasks to visualize your project timeline.</p>
+
+<div style="text-align:center;">
+  <button onclick="addTask()">+ Add Task</button>
+</div>
+
+<div id="timeline"></div>
+
+<script>
+let taskCount = 0;
+const timeline = document.getElementById('timeline');
+
+function addTask() {
+  const task = document.createElement('div');
+  task.className = 'task';
+  task.innerText = 'Task ' + (++taskCount);
+  task.style.left = (taskCount * 60) + 'px';
+  task.style.top = (taskCount * 45) + 'px';
+  task.style.width = '120px';
+  timeline.appendChild(task);
+
+  let offsetX = 0, offsetY = 0, isDragging = false;
+
+  task.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      task.style.left = (e.pageX - timeline.offsetLeft - offsetX) + 'px';
+      task.style.top = (e.pageY - timeline.offsetTop - offsetY) + 'px';
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+}
+</script>
+
+</body>
+</html>
