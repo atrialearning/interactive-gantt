@@ -78,11 +78,23 @@
     line-height: 35px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     transition: box-shadow 0.2s;
+    padding: 0 6px;
   }
 
   .task:active {
     cursor: grabbing;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+
+  .task input {
+    border: none;
+    background: transparent;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    width: 100%;
+    outline: none;
+    font-family: inherit;
   }
 
   button {
@@ -107,7 +119,7 @@
 <body>
 
 <h2>Build Your Own Mini Gantt Chart</h2>
-<p>Add and drag tasks to visualize your project timeline.</p>
+<p>Add, drag, and rename tasks to visualize your project timeline.</p>
 
 <div class="center">
   <button onclick="addTask()">+ Add Task</button>
@@ -128,15 +140,22 @@ const timeline = document.getElementById('timeline');
 function addTask() {
   const task = document.createElement('div');
   task.className = 'task';
-  task.innerText = 'Task ' + (++taskCount);
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = 'Task ' + (++taskCount);
+  task.appendChild(input);
+
+  // Initial position
   task.style.left = (taskCount * 60) + 'px';
   task.style.top = (taskCount * 45) + 'px';
   task.style.width = '160px';
   timeline.appendChild(task);
 
+  // Drag functionality
   let offsetX = 0, offsetY = 0, isDragging = false;
 
   task.addEventListener('mousedown', (e) => {
+    if (e.target.tagName === 'INPUT') return; // prevent drag when editing
     isDragging = true;
     offsetX = e.offsetX;
     offsetY = e.offsetY;
