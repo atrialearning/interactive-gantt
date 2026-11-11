@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wagenborg | Interactive Mini Gantt Chart</title>
+<style>
+.wg-gantt{--wg-red:#DF091E;--wg-black:#0E0E10;--wg-grey:#8D969D;--wg-light:#E5E7EA;font-family:Arial,Helvetica,sans-serif;width:100%;max-width:1050px;margin:0 auto;color:var(--wg-black);box-sizing:border-box}
+.wg-gantt *{box-sizing:border-box}
+.wg-gantt .gantt-header{text-align:center;margin-bottom:18px}
+.wg-gantt .gantt-title{color:var(--wg-black);font-size:23px;font-weight:700;margin:0 0 8px}
+.wg-gantt .gantt-description{color:#51565B;font-size:14px;line-height:1.6;margin:0}
+.wg-gantt .gantt-toolbar{display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:16px}
+.wg-gantt .add-task-btn{background:var(--wg-red);color:#FFFFFF;border:1px solid var(--wg-red);border-radius:8px;padding:11px 20px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.wg-gantt .add-task-btn:hover{background:#B80719;border-color:#B80719}
+.wg-gantt .add-task-btn:focus-visible{outline:3px solid var(--wg-grey);outline-offset:3px}
+.wg-gantt .gantt-scroll{width:100%;overflow-x:auto;border:1px solid #D4D8DC;border-radius:12px;background:#FFFFFF;box-shadow:0 3px 10px rgba(0,0,0,.05)}
+.wg-gantt .gantt-chart{width:800px;min-width:800px}
+.wg-gantt .timeline-labels{display:grid;grid-template-columns:repeat(10,80px);background:#F2F3F4;border-bottom:2px solid var(--wg-red)}
+.wg-gantt .timeline-labels div{color:var(--wg-black);padding:12px 4px;font-size:13px;font-weight:700;text-align:center;border-right:1px solid #D4D8DC}
+.wg-gantt .timeline-labels div:last-child{border-right:none}
+.wg-gantt .timeline{position:relative;width:800px;height:250px;overflow:hidden;background:repeating-linear-gradient(to right,#F3F4F5 0px,#F3F4F5 80px,#FFFFFF 80px,#FFFFFF 160px)}
+.wg-gantt .timeline::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to right,transparent 0px,transparent 79px,#E5E7EA 79px,#E5E7EA 80px)}
+.wg-gantt .task{position:absolute;display:flex;align-items:center;height:36px;padding:0 5px;border-radius:6px;background:var(--wg-red);color:#FFFFFF;box-shadow:0 2px 5px rgba(0,0,0,.14);cursor:grab;user-select:none;touch-action:none;z-index:1}
+.wg-gantt .task:active{cursor:grabbing}
+.wg-gantt .task input{display:block;width:100%;min-width:0;border:0;background:transparent;color:#FFFFFF;font-family:inherit;font-size:12px;font-weight:700;text-align:center;outline:none;cursor:text}
+.wg-gantt .task input:focus{background:rgba(0,0,0,.14);border-radius:3px}
+.wg-gantt .gantt-note{margin-top:13px;padding:12px 15px;background:#F6F7F8;border-left:4px solid var(--wg-red);border-radius:7px;color:#51565B;font-size:13px;line-height:1.6}
+.wg-gantt .gantt-status{min-height:18px;color:#51565B;text-align:center;font-size:12px;margin-top:9px}
+@media(max-width:600px){.wg-gantt .gantt-title{font-size:20px}.wg-gantt .gantt-description{font-size:13px}}
+</style>
+</head>
+<body>
+<div class="wg-gantt" id="wg-gantt">
+  <div class="gantt-header">
+    <h2 class="gantt-title">Build Your Own Mini Gantt Chart</h2>
+    <p class="gantt-description">Add, move, and rename tasks to plan a 10-day onboard project timeline.</p>
+  </div>
+  <div class="gantt-toolbar"><button type="button" class="add-task-btn" id="wg-add-task">+ Add Task</button></div>
+  <div class="gantt-scroll">
+    <div class="gantt-chart">
+      <div class="timeline-labels">
+        <div>Day 1</div><div>Day 2</div><div>Day 3</div><div>Day 4</div><div>Day 5</div>
+        <div>Day 6</div><div>Day 7</div><div>Day 8</div><div>Day 9</div><div>Day 10</div>
+      </div>
+      <div class="timeline" id="wg-timeline"></div>
+    </div>
+  </div>
+  <div class="gantt-note"><strong>How to use:</strong> Select Add Task to create a new activity. Drag a task horizontally to change its scheduled day, or vertically to organize the tasks. Click the task name to rename it.</div>
+  <div class="gantt-status" id="wg-gantt-status" aria-live="polite"></div>
+</div>
+<script>
+(function(){
+  const root=document.getElementById('wg-gantt');
+  if(!root||root.dataset.initialized==='true')return;
+  root.dataset.initialized='true';
+  const timeline=root.querySelector('#wg-timeline');
+  const addButton=root.querySelector('#wg-add-task');
+  const status=root.querySelector('#wg-gantt-status');
+  const gridSize=80,rowHeight=45,taskWidth=70,maxRows=5,maxDays=10;
+  let taskCount=0;
+  function addTask(){
+    if(taskCount>=maxRows*maxDays){status.textContent='The chart has reached its maximum of 50 tasks.';return;}
+    const task=document.createElement('div');task.className='task';
+    const input=document.createElement('input');input.type='text';input.value='Task '+(++taskCount);input.setAttribute('aria-label','Task name');task.appendChild(input);
+    const column=Math.floor((taskCount-1)/maxRows),row=(taskCount-1)%maxRows;
+    task.style.left=(column*gridSize+5)+'px';task.style.top=(row*rowHeight+7)+'px';task.style.width=taskWidth+'px';
+    timeline.appendChild(task);
+    let isDragging=false,startX=0,startY=0,originalLeft=0,originalTop=0;
+    task.addEventListener('pointerdown',function(event){
+      if(event.target.tagName==='INPUT')return;
+      isDragging=true;startX=event.clientX;startY=event.clientY;
+      originalLeft=parseFloat(task.style.left);originalTop=parseFloat(task.style.top);
+      task.setPointerCapture(event.pointerId);
+    });
+    task.addEventListener('pointermove',function(event){
+      if(!isDragging)return;
+      const dx=event.clientX-startX,dy=event.clientY-startY;
+      const dayIndex=Math.max(0,Math.min(maxDays-1,Math.round((originalLeft+dx-5)/gridSize)));
+      const rowIndex=Math.max(0,Math.min(maxRows-1,Math.round((originalTop+dy-7)/rowHeight)));
+      task.style.left=(dayIndex*gridSize+5)+'px';task.style.top=(rowIndex*rowHeight+7)+'px';
+    });
+    function stopDragging(){isDragging=false;}
+    task.addEventListener('pointerup',stopDragging);
+    task.addEventListener('pointercancel',stopDragging);
+    status.textContent='Task added. Drag it to the desired day.';
+  }
+  addButton.addEventListener('click',addTask);
+  addTask();addTask();addTask();
+  status.textContent='Rename the example tasks or add your own.';
+})();
+</script>
+</body>
+</html>
