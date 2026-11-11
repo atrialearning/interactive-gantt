@@ -14,7 +14,7 @@
 .wg-gantt .add-task-btn{background:var(--wg-red);color:#FFFFFF;border:1px solid var(--wg-red);border-radius:8px;padding:11px 20px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .wg-gantt .add-task-btn:hover{background:#B80719;border-color:#B80719}
 .wg-gantt .add-task-btn:focus-visible{outline:3px solid var(--wg-grey);outline-offset:3px}
-.wg-gantt .gantt-scroll{width:100%;overflow-x:auto;border:1px solid #D4D8DC;border-radius:12px;background:#FFFFFF;box-shadow:0 3px 10px rgba(0,0,0,.05)}
+.wg-gantt .gantt-scroll{width:100%;max-width:802px;margin:0 auto;overflow-x:auto;border:1px solid #D4D8DC;border-radius:12px;background:#FFFFFF;box-shadow:0 3px 10px rgba(0,0,0,.05)}
 .wg-gantt .gantt-chart{width:800px;min-width:800px}
 .wg-gantt .timeline-labels{display:grid;grid-template-columns:repeat(10,80px);background:#F2F3F4;border-bottom:2px solid var(--wg-red)}
 .wg-gantt .timeline-labels div{color:var(--wg-black);padding:12px 4px;font-size:13px;font-weight:700;text-align:center;border-right:1px solid #D4D8DC}
@@ -26,7 +26,6 @@
 .wg-gantt .task input{display:block;width:100%;min-width:0;border:0;background:transparent;color:#FFFFFF;font-family:inherit;font-size:12px;font-weight:700;text-align:center;outline:none;cursor:text}
 .wg-gantt .task input:focus{background:rgba(0,0,0,.14);border-radius:3px}
 .wg-gantt .gantt-note{margin-top:13px;padding:12px 15px;background:#F6F7F8;border-left:4px solid var(--wg-red);border-radius:7px;color:#51565B;font-size:13px;line-height:1.6}
-.wg-gantt .gantt-status{min-height:18px;color:#51565B;text-align:center;font-size:12px;margin-top:9px}
 @media(max-width:600px){.wg-gantt .gantt-title{font-size:20px}.wg-gantt .gantt-description{font-size:13px}}
 </style>
 </head>
@@ -47,7 +46,6 @@
     </div>
   </div>
   <div class="gantt-note"><strong>How to use:</strong> Select Add Task to create a new activity. Drag a task horizontally to change its scheduled day, or vertically to organize the tasks. Click the task name to rename it.</div>
-  <div class="gantt-status" id="wg-gantt-status" aria-live="polite"></div>
 </div>
 <script>
 (function(){
@@ -56,11 +54,10 @@
   root.dataset.initialized='true';
   const timeline=root.querySelector('#wg-timeline');
   const addButton=root.querySelector('#wg-add-task');
-  const status=root.querySelector('#wg-gantt-status');
   const gridSize=80,rowHeight=45,taskWidth=70,maxRows=5,maxDays=10;
   let taskCount=0;
   function addTask(){
-    if(taskCount>=maxRows*maxDays){status.textContent='The chart has reached its maximum of 50 tasks.';return;}
+    if(taskCount>=maxRows*maxDays){return;}
     const task=document.createElement('div');task.className='task';
     const input=document.createElement('input');input.type='text';input.value='Task '+(++taskCount);input.setAttribute('aria-label','Task name');task.appendChild(input);
     const column=Math.floor((taskCount-1)/maxRows),row=(taskCount-1)%maxRows;
@@ -83,11 +80,9 @@
     function stopDragging(){isDragging=false;}
     task.addEventListener('pointerup',stopDragging);
     task.addEventListener('pointercancel',stopDragging);
-    status.textContent='Task added. Drag it to the desired day.';
   }
   addButton.addEventListener('click',addTask);
   addTask();addTask();addTask();
-  status.textContent='Rename the example tasks or add your own.';
 })();
 </script>
 </body>
